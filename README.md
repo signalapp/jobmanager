@@ -3,6 +3,15 @@
 An Android library that facilitates scheduling persistent jobs which are executed when their
 prerequisites have been met.  Similar to Path's android-priority-queue.
 
+Add as a gradle dependency, replacing `${latest_version}` with the version currently available:
+
+```
+dependencies {
+  compile 'org.whispersystems:jobmanager:${latest_version}'
+}
+```
+
+
 ## The JobManager Way
 
 Android apps often need to perform blocking operations.  A messaging app might need to make REST

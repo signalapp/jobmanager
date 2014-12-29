@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.14.4'
+        classpath 'com.android.tools.build:gradle:1.0.0'
     }
 }
 
@@ -13,15 +13,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-version = "0.9.0"
+version = "0.10.0"
 group   = "org.whispersystems"
 
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.1.1'
+    buildToolsVersion '21.1.2'
 
     defaultConfig {
-        applicationId "org.whispersystems.jobqueue"
         minSdkVersion 9
         targetSdkVersion 19
         versionCode 1
@@ -73,6 +72,16 @@ uploadArchives {
                     name 'Moxie Marlinspike'
                 }
             }
+        }
+    }
+}
+
+task installArchives(type: Upload) {
+    description "Installs the artifacts to the local Maven repository."
+    configuration = configurations['archives']
+    repositories {
+        mavenDeployer {
+            repository url: "file://${System.properties['user.home']}/.m2/repository"
         }
     }
 }

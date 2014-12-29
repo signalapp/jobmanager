@@ -21,10 +21,6 @@ package org.whispersystems.jobqueue.requirements;
  * state is likely to have changed.
  */
 public interface RequirementProvider {
-  /**
-   * @return The name of the provider.
-   */
-  public String getName();
 
   /**
    * The {@link org.whispersystems.jobqueue.requirements.RequirementListener} to call when

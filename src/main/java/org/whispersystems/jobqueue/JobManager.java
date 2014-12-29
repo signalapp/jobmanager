@@ -78,23 +78,6 @@ public class JobManager implements RequirementListener {
     return new Builder(context);
   }
 
-  /**
-   * Returns a {@link org.whispersystems.jobqueue.requirements.RequirementProvider} registered with
-   * the JobManager by name.
-   *
-   * @param name The name of the registered {@link org.whispersystems.jobqueue.requirements.RequirementProvider}
-   * @return The RequirementProvider, or null if no provider is registered with that name.
-   */
-  public RequirementProvider getRequirementProvider(String name) {
-    for (RequirementProvider provider : requirementProviders) {
-      if (provider.getName().equals(name)) {
-        return provider;
-      }
-    }
-
-    return null;
-  }
-
   public void setEncryptionKeys(EncryptionKeys keys) {
     if (hasLoadedEncrypted.compareAndSet(false, true)) {
       eventExecutor.execute(new LoadTask(keys));

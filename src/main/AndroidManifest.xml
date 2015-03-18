@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.whispersystems.jobqueue">
 
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
     <application />
 
 </manifest>

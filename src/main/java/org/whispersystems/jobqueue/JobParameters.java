@@ -21,6 +21,7 @@ import org.whispersystems.jobqueue.requirements.Requirement;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The set of parameters that describe a {@link org.whispersystems.jobqueue.Job}.
@@ -33,17 +34,22 @@ public class JobParameters implements Serializable {
   private final boolean           isPersistent;
   private final int               retryCount;
   private final String            groupId;
+  private final boolean           wakeLock;
+  private final long              wakeLockTimeout;
 
   private JobParameters(List<Requirement> requirements,
                        boolean isPersistent, String groupId,
                        EncryptionKeys encryptionKeys,
-                       int retryCount)
+                       int retryCount, boolean wakeLock,
+                       long wakeLockTimeout)
   {
-    this.requirements   = requirements;
-    this.isPersistent   = isPersistent;
-    this.groupId        = groupId;
-    this.encryptionKeys = encryptionKeys;
-    this.retryCount     = retryCount;
+    this.requirements    = requirements;
+    this.isPersistent    = isPersistent;
+    this.groupId         = groupId;
+    this.encryptionKeys  = encryptionKeys;
+    this.retryCount      = retryCount;
+    this.wakeLock        = wakeLock;
+    this.wakeLockTimeout = wakeLockTimeout;
   }
 
   public List<Requirement> getRequirements() {
@@ -77,12 +83,22 @@ public class JobParameters implements Serializable {
     return groupId;
   }
 
+  public boolean needsWakeLock() {
+    return wakeLock;
+  }
+
+  public long getWakeLockTimeout() {
+    return wakeLockTimeout;
+  }
+
   public static class Builder {
-    private List<Requirement> requirements   = new LinkedList<>();
-    private boolean           isPersistent   = false;
-    private EncryptionKeys    encryptionKeys = null;
-    private int               retryCount     = 100;
-    private String            groupId        = null;
+    private List<Requirement> requirements    = new LinkedList<>();
+    private boolean           isPersistent    = false;
+    private EncryptionKeys    encryptionKeys  = null;
+    private int               retryCount      = 100;
+    private String            groupId         = null;
+    private boolean           wakeLock        = false;
+    private long              wakeLockTimeout = 0;
 
     /**
      * Specify a {@link org.whispersystems.jobqueue.requirements.Requirement }that must be met
@@ -140,10 +156,35 @@ public class JobParameters implements Serializable {
     }
 
     /**
+     * Specify whether this job should hold a wake lock.
+     *
+     * @param needsWakeLock If set, this job will acquire a wakelock on add(), and hold it until
+     *                      run() completes, or cancel().
+     * @param timeout       Specify a timeout for the wakelock.  A timeout of
+     *                      0 will result in no timeout.
+     *
+     * @return the builder.
+     */
+    public Builder withWakeLock(boolean needsWakeLock, long timeout, TimeUnit unit) {
+      this.wakeLock        = needsWakeLock;
+      this.wakeLockTimeout = unit.toMillis(timeout);
+      return this;
+    }
+
+    /**
+     * Specify whether this job should hold a wake lock.
+     *
+     * @return the builder.
+     */
+    public Builder withWakeLock(boolean needsWakeLock) {
+      return withWakeLock(needsWakeLock, 0, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * @return the JobParameters instance that describes a Job.
      */
     public JobParameters create() {
-      return new JobParameters(requirements, isPersistent, groupId, encryptionKeys, retryCount);
+      return new JobParameters(requirements, isPersistent, groupId, encryptionKeys, retryCount, wakeLock, wakeLockTimeout);
     }
   }
 }

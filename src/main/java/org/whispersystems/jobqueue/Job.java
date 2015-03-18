@@ -16,6 +16,8 @@
  */
 package org.whispersystems.jobqueue;
 
+import android.os.PowerManager;
+
 import org.whispersystems.jobqueue.requirements.Requirement;
 
 import java.io.Serializable;
@@ -29,8 +31,9 @@ public abstract class Job implements Serializable {
 
   private final JobParameters parameters;
 
-  private transient long persistentId;
-  private transient int  runIteration;
+  private transient long                  persistentId;
+  private transient int                   runIteration;
+  private transient PowerManager.WakeLock wakeLock;
 
   public Job(JobParameters parameters) {
     this.parameters = parameters;
@@ -82,6 +85,22 @@ public abstract class Job implements Serializable {
 
   public void setRunIteration(int runIteration) {
     this.runIteration = runIteration;
+  }
+
+  public boolean needsWakeLock() {
+    return parameters.needsWakeLock();
+  }
+
+  public long getWakeLockTimeout() {
+    return parameters.getWakeLockTimeout();
+  }
+
+  public void setWakeLock(PowerManager.WakeLock wakeLock) {
+    this.wakeLock = wakeLock;
+  }
+
+  public PowerManager.WakeLock getWakeLock() {
+    return this.wakeLock;
   }
 
   /**

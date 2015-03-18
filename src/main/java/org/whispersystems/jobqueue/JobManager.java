@@ -17,6 +17,7 @@
 package org.whispersystems.jobqueue;
 
 import android.content.Context;
+import android.os.PowerManager;
 import android.util.Log;
 
 import org.whispersystems.jobqueue.dependencies.DependencyInjector;
@@ -44,6 +45,7 @@ public class JobManager implements RequirementListener {
   private final Executor      eventExecutor      = Executors.newSingleThreadExecutor();
   private final AtomicBoolean hasLoadedEncrypted = new AtomicBoolean(false);
 
+  private final Context                   context;
   private final PersistentStorage         persistentStorage;
   private final List<RequirementProvider> requirementProviders;
   private final DependencyInjector        dependencyInjector;
@@ -53,6 +55,7 @@ public class JobManager implements RequirementListener {
                      DependencyInjector dependencyInjector,
                      JobSerializer jobSerializer, int consumers)
   {
+    this.context              = context;
     this.persistentStorage    = new PersistentStorage(context, name, jobSerializer, dependencyInjector);
     this.requirementProviders = requirementProviders;
     this.dependencyInjector   = dependencyInjector;
@@ -90,6 +93,10 @@ public class JobManager implements RequirementListener {
    * @param job The Job to be executed.
    */
   public void add(final Job job) {
+    if (job.needsWakeLock()) {
+      job.setWakeLock(acquireWakeLock(context, job.toString(), job.getWakeLockTimeout()));
+    }
+
     eventExecutor.execute(new Runnable() {
       @Override
       public void run() {
@@ -120,6 +127,16 @@ public class JobManager implements RequirementListener {
         jobQueue.onRequirementStatusChanged();
       }
     });
+  }
+
+  private PowerManager.WakeLock acquireWakeLock(Context context, String name, long timeout) {
+    PowerManager          powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+    PowerManager.WakeLock wakeLock     = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, name);
+
+    if (timeout == 0) wakeLock.acquire();
+    else              wakeLock.acquire(timeout);
+
+    return wakeLock;
   }
 
   private class LoadTask implements Runnable {

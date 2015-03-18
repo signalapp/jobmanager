@@ -55,6 +55,10 @@ class JobConsumer extends Thread {
         if (job.isPersistent()) {
           persistentStorage.remove(job.getPersistentId());
         }
+
+        if (job.getWakeLock() != null && job.getWakeLockTimeout() == 0) {
+          job.getWakeLock().release();
+        }
       }
 
       if (job.getGroupId() != null) {

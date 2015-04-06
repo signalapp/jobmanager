@@ -1,10 +1,8 @@
 package org.whispersystems.jobqueue.jobs;
 
-  import org.whispersystems.jobqueue.JobParameters;
-  import org.whispersystems.jobqueue.requirements.Requirement;
-  import org.whispersystems.jobqueue.util.RunnableThrowable;
-
-  import java.io.IOException;
+import org.whispersystems.jobqueue.JobParameters;
+import org.whispersystems.jobqueue.requirements.Requirement;
+import org.whispersystems.jobqueue.util.RunnableThrowable;
 
 public class RequirementDeferringTestJob extends TestJob {
 

@@ -16,16 +16,17 @@
  */
 package org.whispersystems.jobqueue.persistence;
 
-import android.util.Base64;
-
 import org.whispersystems.jobqueue.EncryptionKeys;
 import org.whispersystems.jobqueue.Job;
+import org.whispersystems.jobqueue.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * An implementation of {@link org.whispersystems.jobqueue.persistence.JobSerializer} that uses
@@ -52,7 +53,11 @@ public class JavaJobSerializer implements JobSerializer {
 
       return (Job)ois.readObject();
     } catch (ClassNotFoundException e) {
-      throw new IOException(e);
+      StringWriter sw = new StringWriter();
+      PrintWriter  pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+
+      throw new IOException(e.getMessage() + "\n" + sw.toString());
     }
   }
 }

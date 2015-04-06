@@ -42,7 +42,7 @@ class JobQueue {
   }
 
   synchronized void push(Job job) {
-    jobQueue.push(job);
+    jobQueue.addFirst(job);
   }
 
   synchronized Job getNext() {

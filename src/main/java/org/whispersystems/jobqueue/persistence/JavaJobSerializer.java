@@ -31,6 +31,9 @@ import java.io.StringWriter;
 /**
  * An implementation of {@link org.whispersystems.jobqueue.persistence.JobSerializer} that uses
  * Java Serialization.
+ *
+ * NOTE: This {@link JobSerializer} does not support encryption. Jobs will be serialized normally,
+ * but any corresponding {@link Job} encryption keys will be ignored.
  */
 public class JavaJobSerializer implements JobSerializer {
 

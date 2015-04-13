@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.PowerManager;
 import android.util.Log;
 
+import org.whispersystems.jobqueue.dependencies.AggregateDependencyInjector;
 import org.whispersystems.jobqueue.dependencies.DependencyInjector;
 import org.whispersystems.jobqueue.persistence.JobSerializer;
 import org.whispersystems.jobqueue.persistence.PersistentStorage;
@@ -45,10 +46,10 @@ public class JobManager implements RequirementListener {
   private final Executor      eventExecutor      = Executors.newSingleThreadExecutor();
   private final AtomicBoolean hasLoadedEncrypted = new AtomicBoolean(false);
 
-  private final Context                   context;
-  private final PersistentStorage         persistentStorage;
-  private final List<RequirementProvider> requirementProviders;
-  private final DependencyInjector        dependencyInjector;
+  private final Context                     context;
+  private final PersistentStorage           persistentStorage;
+  private final List<RequirementProvider>   requirementProviders;
+  private final AggregateDependencyInjector dependencyInjector;
 
   private JobManager(Context context, String name,
                      List<RequirementProvider> requirementProviders,
@@ -56,9 +57,9 @@ public class JobManager implements RequirementListener {
                      JobSerializer jobSerializer, int consumers)
   {
     this.context              = context;
-    this.persistentStorage    = new PersistentStorage(context, name, jobSerializer, dependencyInjector);
+    this.dependencyInjector   = new AggregateDependencyInjector(dependencyInjector);
+    this.persistentStorage    = new PersistentStorage(context, name, jobSerializer, this.dependencyInjector);
     this.requirementProviders = requirementProviders;
-    this.dependencyInjector   = dependencyInjector;
 
     eventExecutor.execute(new LoadTask(null));
 
@@ -105,9 +106,7 @@ public class JobManager implements RequirementListener {
             persistentStorage.store(job);
           }
 
-          if (dependencyInjector != null) {
-            dependencyInjector.injectDependencies(job);
-          }
+          dependencyInjector.injectDependencies(context, job);
 
           job.onAdded();
           jobQueue.add(job);
